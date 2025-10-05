@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Migration Runner</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #1a202c;
+            margin-bottom: 0.5rem;
+        }
+        .subtitle {
+            color: #718096;
+            margin-bottom: 2rem;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin-right: 1rem;
+        }
+        button:hover {
+            transform: translateY(-2px);
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        #result {
+            margin-top: 2rem;
+            padding: 1rem;
+            border-radius: 8px;
+            white-space: pre-wrap;
+            font-family: 'Monaco', monospace;
+            font-size: 14px;
+        }
+        .success {
+            background: #f0fdf4;
+            border: 2px solid #86efac;
+            color: #166534;
+        }
+        .error {
+            background: #fef2f2;
+            border: 2px solid #fca5a5;
+            color: #991b1b;
+        }
+        .info {
+            background: #eff6ff;
+            border: 2px solid #93c5fd;
+            color: #1e40af;
+        }
+        .sql-preview {
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Monaco', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Welcome Credits Trigger Migration</h1>
+        <p class="subtitle">Bu migration yeni kayıt olan kullanıcılara otomatik 10 deneme kredisi verir</p>
+
+        <div class="sql-preview">
+-- Creates trigger to give 10 welcome credits to new users
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.users (id, email, credits_balance, plan_code)
+  VALUES (NEW.id, NEW.email, 10, 'trial')
+  ON CONFLICT (id) DO NOTHING;
+
+  INSERT INTO public.credit_ledger (user_id, delta, reason, ref)
+  VALUES (NEW.id, 10, 'welcome_bonus', 'trial_signup');
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+        </div>
+
+        <button onclick="runMigration()">▶️ Migration'ı Çalıştır</button>
+        <button onclick="testSystem()">🧪 Sistemi Test Et</button>
+        <button onclick="checkTrigger()">🔍 Trigger Durumunu Kontrol Et</button>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://rbezqujczgetsoaehfrh.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJiZXpxdWpjemdldHNvYWVoZnJoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mjc0NTAwMDAsImV4cCI6MjA0MzAyNjAwMH0.Wx2bKO-7lnGEKDHO7xM9YqQvbhF8eBCZC-aMjVPZgWk';
+
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        function showResult(message, type = 'info') {
+            const result = document.getElementById('result');
+            result.textContent = message;
+            result.className = type;
+        }
+
+        async function runMigration() {
+            showResult('Migration çalıştırılıyor...', 'info');
+
+            try {
+                // Note: Direct SQL execution requires service role key
+                // This will be executed via Supabase dashboard SQL editor
+                showResult('⚠️ Bu migration\'ı Supabase Dashboard\'dan çalıştırmanız gerekiyor:\n\n' +
+                    '1. https://supabase.com/dashboard → Projeniz\n' +
+                    '2. SQL Editor\n' +
+                    '3. Yukarıdaki SQL kodunu yapıştırın\n' +
+                    '4. Run butonuna basın\n\n' +
+                    'Alternatif: supabase/migrations/20251002120000_add_welcome_credits_trigger.sql dosyasını kullanın',
+                    'info'
+                );
+            } catch (error) {
+                showResult('❌ Hata: ' + error.message, 'error');
+            }
+        }
+
+        async function checkTrigger() {
+            showResult('Trigger kontrol ediliyor...', 'info');
+
+            try {
+                const { data, error } = await supabase
+                    .from('users')
+                    .select('email, credits_balance, plan_code')
+                    .order('created_at', { ascending: false })
+                    .limit(5);
+
+                if (error) throw error;
+
+                showResult('✅ Son 5 kullanıcı:\n\n' +
+                    JSON.stringify(data, null, 2),
+                    'success'
+                );
+            } catch (error) {
+                showResult('❌ Hata: ' + error.message, 'error');
+            }
+        }
+
+        async function testSystem() {
+            showResult('Webhook sistemi test ediliyor...', 'info');
+
+            try {
+                // Test webhook endpoint
+                const timestamp = Date.now();
+                const response = await fetch(
+                    `https://rbezqujczgetsoaehfrh.supabase.co/functions/v1/gumroad-webhook?key=Zk8vQ9tP4sR6uM2xH7bYw3nLf5Cq1D0aS_V-J`,
+                    {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: new URLSearchParams({
+                            email: `test-${timestamp}@example.com`,
+                            permalink: 'temelpaket',
+                            sale_id: `test-${timestamp}`,
+                            product_name: 'Temel Paket'
+                        })
+                    }
+                );
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showResult('✅ Test başarılı!\n\n' + JSON.stringify(result, null, 2), 'success');
+                } else {
+                    showResult('⚠️ Test sonucu:\n\n' + JSON.stringify(result, null, 2), 'info');
+                }
+            } catch (error) {
+                showResult('❌ Test hatası: ' + error.message, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

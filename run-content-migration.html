@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Content Management Migration</title>
+    <style>
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #1a202c;
+            margin-bottom: 0.5rem;
+        }
+        .subtitle {
+            color: #718096;
+            margin-bottom: 2rem;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin-right: 1rem;
+        }
+        button:hover {
+            transform: translateY(-2px);
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        #result {
+            margin-top: 2rem;
+            padding: 1rem;
+            border-radius: 8px;
+            white-space: pre-wrap;
+            font-family: 'Monaco', monospace;
+            font-size: 14px;
+        }
+        .success {
+            background: #f0fdf4;
+            border: 2px solid #86efac;
+            color: #166534;
+        }
+        .error {
+            background: #fef2f2;
+            border: 2px solid #fca5a5;
+            color: #991b1b;
+        }
+        .info {
+            background: #eff6ff;
+            border: 2px solid #93c5fd;
+            color: #1e40af;
+        }
+        .warning {
+            background: #fefce8;
+            border: 2px solid #fde047;
+            color: #854d0e;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 Content Management System Migration</h1>
+        <p class="subtitle">Bu migration anasayfadaki tüm içerikleri yönetmek için database tabloları oluşturur</p>
+
+        <div style="margin-bottom: 2rem; padding: 1rem; background: #fffbeb; border: 2px solid #fbbf24; border-radius: 8px;">
+            <h3 style="margin-top: 0; color: #92400e;">⚠️ Önemli Not</h3>
+            <p style="color: #92400e; margin: 0;">Bu migration'ı Supabase Dashboard'dan SQL Editor kullanarak çalıştırmalısınız.</p>
+            <p style="color: #92400e; margin: 0.5rem 0 0 0;">Dosya: <code>supabase/migrations/20251002140000_create_content_management_tables.sql</code></p>
+        </div>
+
+        <h3>Migration İçeriği:</h3>
+        <ul>
+            <li>✅ <strong>site_content</strong> - Hero, CTA, genel metinler</li>
+            <li>✅ <strong>portfolio_items</strong> - Referans çalışmaları (önce/sonra görselleri)</li>
+            <li>✅ <strong>testimonials</strong> - Müşteri yorumları</li>
+            <li>✅ <strong>site_stats</strong> - İstatistikler (50,000+ Görsel, vb.)</li>
+            <li>✅ <strong>features</strong> - Özellik kartları</li>
+        </ul>
+
+        <h3>Admin Paneli Yeni Sayfalar:</h3>
+        <ul>
+            <li>📝 <strong>/admin/content</strong> - Genel içerik metinleri</li>
+            <li>🖼️ <strong>/admin/portfolio</strong> - Referans çalışmaları yönetimi</li>
+            <li>⭐ <strong>/admin/testimonials</strong> - Müşteri yorumları yönetimi</li>
+        </ul>
+
+        <button onclick="window.open('https://supabase.com/dashboard', '_blank')">
+            🚀 Supabase Dashboard'u Aç
+        </button>
+
+        <button onclick="showMigrationSQL()">
+            📋 Migration SQL'i Göster
+        </button>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function showResult(message, type = 'info') {
+            const result = document.getElementById('result');
+            result.textContent = message;
+            result.className = type;
+        }
+
+        function showMigrationSQL() {
+            showResult(`
+Migration dosyası: supabase/migrations/20251002140000_create_content_management_tables.sql
+
+Bu dosyayı Supabase Dashboard'da şu adımlarla çalıştırın:
+
+1. https://supabase.com/dashboard adresine gidin
+2. Projenizi seçin (AI Visual Studio)
+3. Sol menüden "SQL Editor" seçin
+4. "New Query" butonuna tıklayın
+5. Migration dosyasının içeriğini yapıştırın
+6. "Run" butonuna basın
+
+Migration Özeti:
+- 5 yeni tablo oluşturulacak
+- Her tablo için RLS politikaları ayarlanacak
+- Varsayılan veriler eklenecek
+- İndeksler oluşturulacak
+
+Tablolar:
+✅ site_content (hero, CTA metinleri)
+✅ portfolio_items (referans çalışmaları)
+✅ testimonials (müşteri yorumları)
+✅ site_stats (istatistikler)
+✅ features (özellik kartları)
+
+Migration tamamlandıktan sonra:
+1. Admin panele giriş yapın
+2. "Referanslar" sayfasından referans çalışmalarınızı yönetin
+3. "Yorumlar" sayfasından testimonial'ları güncelleyin
+4. "İçerik Yönetimi" sayfasından metinleri değiştirin
+`, 'info');
+        }
+
+        // Initial info
+        showMigrationSQL();
+    </script>
+</body>
+</html>

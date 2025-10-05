@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Webhook Log Kontrol</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #1a1a1a; color: #fff; }
+        .log { background: #2a2a2a; padding: 15px; margin: 10px 0; border-radius: 8px; }
+        .success { border-left: 4px solid #22c55e; }
+        .error { border-left: 4px solid #ef4444; }
+        button { background: #3b82f6; color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; margin: 5px; }
+        button:hover { background: #2563eb; }
+        pre { background: #1a1a1a; padding: 10px; border-radius: 4px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Gumroad Webhook Log Kontrol</h1>
+
+    <div>
+        <button onclick="checkProcessedWebhooks()">İşlenmiş Webhook'ları Kontrol Et</button>
+        <button onclick="checkCreditLedger()">Kredi İşlemlerini Kontrol Et</button>
+        <button onclick="checkUser()">ecrin@goruntulabs.com Hesabını Kontrol Et</button>
+        <button onclick="testWebhook()">Test Webhook Gönder</button>
+    </div>
+
+    <div id="results"></div>
+
+    <script>
+        const SUPABASE_URL = 'https://rbezqujczgetsoaehfrh.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJib2x0IiwicmVmIjoiMGVjOTBiNTdkNmU5NWZjYmRhMTk4MzJmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg4ODE1NzQsImV4cCI6MTc1ODg4MTU3NH0.9I8-U0x86Ak8t2DGaIk0HfvTSLsAyzdnz-Nw00mMkKw';
+
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        function showResult(title, data, isError = false) {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = 'log ' + (isError ? 'error' : 'success');
+            div.innerHTML = `
+                <h3>${title}</h3>
+                <pre>${JSON.stringify(data, null, 2)}</pre>
+            `;
+            results.insertBefore(div, results.firstChild);
+        }
+
+        async function checkProcessedWebhooks() {
+            try {
+                const { data, error } = await supabase
+                    .from('processed_webhooks')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .limit(10);
+
+                if (error) throw error;
+                showResult('✅ İşlenmiş Webhook\'lar (Son 10)', {
+                    count: data.length,
+                    webhooks: data
+                });
+            } catch (error) {
+                showResult('❌ Hata: İşlenmiş Webhook\'lar', error, true);
+            }
+        }
+
+        async function checkCreditLedger() {
+            try {
+                const { data, error } = await supabase
+                    .from('credit_ledger')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .limit(10);
+
+                if (error) throw error;
+                showResult('✅ Kredi İşlemleri (Son 10)', {
+                    count: data.length,
+                    transactions: data
+                });
+            } catch (error) {
+                showResult('❌ Hata: Kredi İşlemleri', error, true);
+            }
+        }
+
+        async function checkUser() {
+            try {
+                const { data, error } = await supabase
+                    .from('users')
+                    .select('*')
+                    .eq('email', 'ecrin@goruntulabs.com')
+                    .maybeSingle();
+
+                if (error) throw error;
+                showResult('✅ ecrin@goruntulabs.com Hesap Durumu', data || 'Kullanıcı bulunamadı');
+            } catch (error) {
+                showResult('❌ Hata: Kullanıcı Sorgusu', error, true);
+            }
+        }
+
+        async function testWebhook() {
+            try {
+                const response = await fetch(
+                    'https://rbezqujczgetsoaehfrh.supabase.co/functions/v1/gumroad-webhook?key=Zk8vQ9tP4sR6uM2xH7bYw3nLf5Cq1D0aS_V-J',
+                    {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            email: 'test@example.com',
+                            product_permalink: 'temelpaket',
+                            sale_id: 'test-' + Date.now()
+                        })
+                    }
+                );
+
+                const data = await response.json();
+                showResult('✅ Test Webhook Yanıtı', {
+                    status: response.status,
+                    data: data
+                });
+            } catch (error) {
+                showResult('❌ Hata: Test Webhook', error, true);
+            }
+        }
+
+        // Sayfa yüklendiğinde otomatik kontrol
+        window.onload = () => {
+            checkProcessedWebhooks();
+            checkUser();
+        };
+    </script>
+</body>
+</html>
