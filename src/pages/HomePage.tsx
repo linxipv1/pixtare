@@ -234,7 +234,16 @@ export const HomePage: React.FC = () => {
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
                 </div>
               ) : features.length > 0 ? (
-                features.map((feature, index) => (
+                features.map((feature, index) => {
+                  const colorMap: Record<string, { bg: string; border: string }> = {
+                    'text-blue-600': { bg: 'bg-blue-50', border: 'border-blue-200' },
+                    'text-green-600': { bg: 'bg-green-50', border: 'border-green-200' },
+                    'text-purple-600': { bg: 'bg-purple-50', border: 'border-purple-200' },
+                    'text-orange-600': { bg: 'bg-orange-50', border: 'border-orange-200' }
+                  };
+                  const colors = colorMap[feature.icon_color] || { bg: 'bg-gray-50', border: 'border-gray-200' };
+
+                  return (
                   <motion.div
                     key={feature.id}
                     initial={{ opacity: 0, y: 30 }}
@@ -242,7 +251,7 @@ export const HomePage: React.FC = () => {
                     transition={{ duration: 0.5, delay: index * 0.1 }}
                     viewport={{ once: true }}
                   >
-                    <Card className="p-8 text-center card-hover h-full">
+                    <Card className={`p-8 text-center card-hover h-full border-2 ${colors.border} ${colors.bg}`}>
                       <div className="flex justify-center mb-4">
                         {getIconComponent(feature.icon, feature.icon_color)}
                       </div>
@@ -254,9 +263,18 @@ export const HomePage: React.FC = () => {
                       </p>
                     </Card>
                   </motion.div>
-                ))
+                )})
               ) : (
-                fallbackFeatures.map((feature, index) => (
+                fallbackFeatures.map((feature, index) => {
+                  const colorMap: Record<string, { bg: string; border: string }> = {
+                    'blue': { bg: 'bg-blue-50', border: 'border-blue-200' },
+                    'green': { bg: 'bg-green-50', border: 'border-green-200' },
+                    'purple': { bg: 'bg-purple-50', border: 'border-purple-200' },
+                    'orange': { bg: 'bg-orange-50', border: 'border-orange-200' }
+                  };
+                  const colors = colorMap[feature.color] || { bg: 'bg-gray-50', border: 'border-gray-200' };
+
+                  return (
                   <motion.div
                     key={index}
                     initial={{ opacity: 0, y: 30 }}
@@ -264,7 +282,7 @@ export const HomePage: React.FC = () => {
                     transition={{ duration: 0.5, delay: index * 0.1 }}
                     viewport={{ once: true }}
                   >
-                    <Card className="p-8 text-center card-hover h-full">
+                    <Card className={`p-8 text-center card-hover h-full border-2 ${colors.border} ${colors.bg}`}>
                       <div className="flex justify-center mb-4">
                         {feature.icon}
                       </div>
@@ -276,7 +294,7 @@ export const HomePage: React.FC = () => {
                       </p>
                     </Card>
                   </motion.div>
-                ))
+                )})
               )}
             </div>
           </div>
