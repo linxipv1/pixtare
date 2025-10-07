@@ -441,19 +441,19 @@ export const HomePage: React.FC = () => {
                 {
                   icon: <Mail className="w-8 h-8 text-blue-600" />,
                   title: 'E-posta',
-                  content: 'info@pixtrate.com',
+                  content: 'support@pixtrate.com',
                   description: '24 saat içinde yanıtlıyoruz'
                 },
                 {
                   icon: <Phone className="w-8 h-8 text-green-600" />,
                   title: 'Telefon',
-                  content: '+90 (212) 555-0123',
+                  content: '+90 506 110 65 97',
                   description: 'Pazartesi-Cuma 09:00-18:00'
                 },
                 {
                   icon: <MapPin className="w-8 h-8 text-purple-600" />,
                   title: 'Adres',
-                  content: 'Maslak, İstanbul',
+                  content: 'İstanbul',
                   description: 'Türkiye'
                 }
               ].map((contact, index) => (
