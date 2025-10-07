@@ -18,7 +18,7 @@ export const Header: React.FC = () => {
   const publicNavItems = [
     { name: 'Ana Sayfa', href: '/' },
     { name: 'Fiyatlandırma', href: '/pricing' },
-    { name: 'İletişim', href: '/contact' },
+    { name: 'İletişim', href: '/#contact' },
   ];
 
   const appNavItems = [
@@ -50,6 +50,15 @@ export const Header: React.FC = () => {
               <Link
                 key={item.name}
                 to={item.href}
+                onClick={(e) => {
+                  if (item.href === '/#contact') {
+                    e.preventDefault();
+                    const contactSection = document.getElementById('contact');
+                    if (contactSection) {
+                      contactSection.scrollIntoView({ behavior: 'smooth' });
+                    }
+                  }
+                }}
                 className={`text-sm font-medium transition-colors duration-200 ${
                   isActive(item.href)
                     ? 'text-blue-600 border-b-2 border-blue-600 pb-1'
