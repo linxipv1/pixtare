@@ -138,7 +138,7 @@ export const HomePage: React.FC = () => {
                   to="/pricing"
                   variant="outline"
                   size="lg"
-                  className="bg-white border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white px-8 py-4 text-lg"
+                  className="bg-transparent border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white px-8 py-4 text-lg"
                 >
                   Fiyatlandırmayı İncele
                 </Button>
