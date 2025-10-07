@@ -183,12 +183,21 @@ export const HomePage: React.FC = () => {
                     <div className="flex justify-center mb-3">
                       {getIconComponent(stat.icon, stat.icon_color)}
                     </div>
-                    <div className="text-3xl font-bold text-gray-900 mb-2">{stat.number}</div>
+                    <div className={`text-3xl font-bold mb-2 ${stat.icon_color}`}>{stat.number}</div>
                     <div className="text-gray-600">{stat.label}</div>
                   </motion.div>
                 ))
               ) : (
-                fallbackStats.map((stat, index) => (
+                fallbackStats.map((stat, index) => {
+                  const numberColorMap: Record<number, string> = {
+                    0: 'text-blue-600',
+                    1: 'text-green-600',
+                    2: 'text-purple-600',
+                    3: 'text-orange-600'
+                  };
+                  const numberColor = numberColorMap[index] || 'text-gray-900';
+
+                  return (
                   <motion.div
                     key={index}
                     initial={{ opacity: 0, y: 20 }}
@@ -200,10 +209,10 @@ export const HomePage: React.FC = () => {
                     <div className="flex justify-center mb-3">
                       {stat.icon}
                     </div>
-                    <div className="text-3xl font-bold text-gray-900 mb-2">{stat.number}</div>
+                    <div className={`text-3xl font-bold mb-2 ${numberColor}`}>{stat.number}</div>
                     <div className="text-gray-600">{stat.label}</div>
                   </motion.div>
-                ))
+                )})
               )}
             </div>
           </div>
