@@ -6,9 +6,15 @@ import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { SEOHead } from '../components/seo/SEOHead';
+import { usePortfolioItems, useTestimonials, useSiteStats, useFeatures } from '../hooks/useContent';
 
 export const HomePage: React.FC = () => {
-  const testimonials = [
+  const { items: portfolioItems, loading: portfolioLoading } = usePortfolioItems();
+  const { items: testimonials, loading: testimonialsLoading } = useTestimonials();
+  const { stats: siteStats, loading: statsLoading } = useSiteStats();
+  const { features, loading: featuresLoading } = useFeatures();
+
+  const fallbackTestimonials = [
     {
       name: 'Ahmet Yılmaz',
       company: 'Mobilya Dünyası',
@@ -32,11 +38,53 @@ export const HomePage: React.FC = () => {
     }
   ];
 
-  const stats = [
+  const fallbackStats = [
     { number: '50,000+', label: 'Üretilen Görsel', icon: <Camera className="h-6 w-6 text-blue-600" /> },
     { number: '5,000+', label: 'Mutlu Müşteri', icon: <Users className="h-6 w-6 text-green-600" /> },
     { number: '15,000+', label: 'Video Üretimi', icon: <Video className="h-6 w-6 text-purple-600" /> },
     { number: '%95', label: 'Memnuniyet Oranı', icon: <TrendingUp className="h-6 w-6 text-orange-600" /> }
+  ];
+
+  const getIconComponent = (iconName: string, color: string) => {
+    const iconProps = { className: `h-6 w-6 ${color}` };
+    switch (iconName) {
+      case 'Camera': return <Camera {...iconProps} />;
+      case 'Users': return <Users {...iconProps} />;
+      case 'Video': return <Video {...iconProps} />;
+      case 'TrendingUp': return <TrendingUp {...iconProps} />;
+      case 'Zap': return <Zap {...iconProps} />;
+      case 'Shield': return <Shield {...iconProps} />;
+      case 'Clock': return <Clock {...iconProps} />;
+      case 'Sparkles': return <Sparkles {...iconProps} />;
+      default: return <Camera {...iconProps} />;
+    }
+  };
+
+  const fallbackFeatures = [
+    {
+      icon: <Zap className="w-6 h-6 text-blue-600" />,
+      title: 'Hızlı Üretim',
+      description: 'Saniyeler içinde profesyonel kalitede ürün fotoğrafları',
+      color: 'blue'
+    },
+    {
+      icon: <Shield className="w-6 h-6 text-green-600" />,
+      title: 'Ticari Kullanım',
+      description: 'Filigransız, e-ticaret sitenizde özgürce kullanın',
+      color: 'green'
+    },
+    {
+      icon: <Clock className="w-6 h-6 text-purple-600" />,
+      title: '7/24 Erişim',
+      description: 'İstediğiniz zaman, istediğiniz yerden üretin',
+      color: 'purple'
+    },
+    {
+      icon: <Sparkles className="w-6 h-6 text-orange-600" />,
+      title: 'Yüksek Kalite',
+      description: '4K çözünürlükte, profesyonel standartlarda çıktılar',
+      color: 'orange'
+    }
   ];
 
   return (
@@ -118,22 +166,45 @@ export const HomePage: React.FC = () => {
         <section className="py-16 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-              {stats.map((stat, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  viewport={{ once: true }}
-                  className="text-center"
-                >
-                  <div className="flex justify-center mb-3">
-                    {stat.icon}
-                  </div>
-                  <div className="text-3xl font-bold text-gray-900 mb-2">{stat.number}</div>
-                  <div className="text-gray-600">{stat.label}</div>
-                </motion.div>
-              ))}
+              {statsLoading ? (
+                <div className="col-span-full flex items-center justify-center py-12">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                </div>
+              ) : siteStats.length > 0 ? (
+                siteStats.map((stat, index) => (
+                  <motion.div
+                    key={stat.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    viewport={{ once: true }}
+                    className="text-center"
+                  >
+                    <div className="flex justify-center mb-3">
+                      {getIconComponent(stat.icon, stat.icon_color)}
+                    </div>
+                    <div className="text-3xl font-bold text-gray-900 mb-2">{stat.number}</div>
+                    <div className="text-gray-600">{stat.label}</div>
+                  </motion.div>
+                ))
+              ) : (
+                fallbackStats.map((stat, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    viewport={{ once: true }}
+                    className="text-center"
+                  >
+                    <div className="flex justify-center mb-3">
+                      {stat.icon}
+                    </div>
+                    <div className="text-3xl font-bold text-gray-900 mb-2">{stat.number}</div>
+                    <div className="text-gray-600">{stat.label}</div>
+                  </motion.div>
+                ))
+              )}
             </div>
           </div>
         </section>
@@ -158,52 +229,55 @@ export const HomePage: React.FC = () => {
             </div>
             
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {[
-                {
-                  icon: <Zap className="w-6 h-6 text-blue-600" />,
-                  title: 'Hızlı Üretim',
-                  description: 'Saniyeler içinde profesyonel kalitede ürün fotoğrafları',
-                  color: 'blue'
-                },
-                {
-                  icon: <Shield className="w-6 h-6 text-green-600" />,
-                  title: 'Ticari Kullanım',
-                  description: 'Filigransız, e-ticaret sitenizde özgürce kullanın',
-                  color: 'green'
-                },
-                {
-                  icon: <Clock className="w-6 h-6 text-purple-600" />,
-                  title: '7/24 Erişim',
-                  description: 'İstediğiniz zaman, istediğiniz yerden üretin',
-                  color: 'purple'
-                },
-                {
-                  icon: <Sparkles className="w-6 h-6 text-orange-600" />,
-                  title: 'Yüksek Kalite',
-                  description: '4K çözünürlükte, profesyonel standartlarda çıktılar',
-                  color: 'orange'
-                }
-              ].map((feature, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  viewport={{ once: true }}
-                >
-                  <Card className="p-8 text-center card-hover h-full">
-                    <div className="flex justify-center mb-4">
-                      {feature.icon}
-                    </div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                      {feature.title}
-                    </h3>
-                    <p className="text-gray-600">
-                      {feature.description}
-                    </p>
-                  </Card>
-                </motion.div>
-              ))}
+              {featuresLoading ? (
+                <div className="col-span-full flex items-center justify-center py-12">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                </div>
+              ) : features.length > 0 ? (
+                features.map((feature, index) => (
+                  <motion.div
+                    key={feature.id}
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    viewport={{ once: true }}
+                  >
+                    <Card className="p-8 text-center card-hover h-full">
+                      <div className="flex justify-center mb-4">
+                        {getIconComponent(feature.icon, feature.icon_color)}
+                      </div>
+                      <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                        {feature.title}
+                      </h3>
+                      <p className="text-gray-600">
+                        {feature.description}
+                      </p>
+                    </Card>
+                  </motion.div>
+                ))
+              ) : (
+                fallbackFeatures.map((feature, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    viewport={{ once: true }}
+                  >
+                    <Card className="p-8 text-center card-hover h-full">
+                      <div className="flex justify-center mb-4">
+                        {feature.icon}
+                      </div>
+                      <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                        {feature.title}
+                      </h3>
+                      <p className="text-gray-600">
+                        {feature.description}
+                      </p>
+                    </Card>
+                  </motion.div>
+                ))
+              )}
             </div>
           </div>
         </section>
@@ -232,29 +306,12 @@ export const HomePage: React.FC = () => {
 
             {/* References Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
-              {[
-                {
-                  before: 'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&dpr=2',
-                  after: 'https://images.pexels.com/photos/1927259/pexels-photo-1927259.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&dpr=2',
-                  category: 'Mobilya',
-                  title: 'Modern Koltuk Takımı',
-                  description: 'Ev ortamından profesyonel stüdyo görünümüne dönüştürüldü'
-                },
-                {
-                  before: 'https://images.pexels.com/photos/1148955/pexels-photo-1148955.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&dpr=2',
-                  after: 'https://images.pexels.com/photos/1350789/pexels-photo-1350789.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&dpr=2',
-                  category: 'Takı',
-                  title: 'Altın Yüzük Koleksiyonu',
-                  description: 'Basit fotoğraftan lüks mücevher sunumuna'
-                },
-                {
-                  before: 'https://images.pexels.com/photos/298863/pexels-photo-298863.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&dpr=2',
-                  after: 'https://images.pexels.com/photos/1350560/pexels-photo-1350560.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&dpr=2',
-                  category: 'Aksesuar',
-                  title: 'Deri Çanta Koleksiyonu',
-                  description: 'Günlük fotoğraftan premium ürün görseline'
-                }
-              ].map((item, index) => (
+              {portfolioLoading ? (
+                <div className="col-span-full flex items-center justify-center py-12">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                </div>
+              ) : portfolioItems.length > 0 ? (
+                portfolioItems.map((item, index) => (
                 <motion.div
                   key={index}
                   initial={{ opacity: 0, y: 30 }}
@@ -266,13 +323,9 @@ export const HomePage: React.FC = () => {
                     {/* Category Badge */}
                     <div className="p-6 pb-4">
                       <div className="flex items-center justify-between mb-4">
-                        <Badge 
-                          variant="secondary" 
-                          className={`px-3 py-1 text-sm font-medium ${
-                            item.category === 'Mobilya' ? 'bg-blue-100 text-blue-700' :
-                            item.category === 'Takı' ? 'bg-purple-100 text-purple-700' :
-                            'bg-green-100 text-green-700'
-                          }`}
+                        <Badge
+                          variant="secondary"
+                          className="px-3 py-1 text-sm font-medium bg-blue-100 text-blue-700"
                         >
                           {item.category}
                         </Badge>
@@ -296,7 +349,7 @@ export const HomePage: React.FC = () => {
                         {/* Before Image */}
                         <div className="relative overflow-hidden">
                           <img
-                            src={item.before}
+                            src={item.before_image_url}
                             alt={`${item.title} - Öncesi`}
                             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                           />
@@ -309,7 +362,7 @@ export const HomePage: React.FC = () => {
                         {/* After Image */}
                         <div className="relative overflow-hidden">
                           <img
-                            src={item.after}
+                            src={item.after_image_url}
                             alt={`${item.title} - Sonrası`}
                             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                           />
@@ -338,7 +391,12 @@ export const HomePage: React.FC = () => {
                     </div>
                   </Card>
                 </motion.div>
-              ))}
+              ))
+              ) : (
+                <div className="col-span-full text-center py-12">
+                  <p className="text-gray-500">Henüz referans çalışması eklenmemiş</p>
+                </div>
+              )}
             </div>
 
             {/* Call to Action */}
@@ -382,37 +440,77 @@ export const HomePage: React.FC = () => {
             </div>
 
             <div className="grid md:grid-cols-3 gap-8">
-              {testimonials.map((testimonial, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  viewport={{ once: true }}
-                >
-                  <Card className="p-8 text-center card-hover h-full">
-                    <div className="flex justify-center mb-4">
-                      {[...Array(testimonial.rating)].map((_, i) => (
-                        <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
-                      ))}
-                    </div>
-                    <p className="text-gray-600 mb-6 italic">
-                      "{testimonial.text}"
-                    </p>
-                    <div className="flex items-center justify-center space-x-3">
-                      <img
-                        src={testimonial.image}
-                        alt={testimonial.name}
-                        className="w-12 h-12 rounded-full object-cover"
-                      />
-                      <div>
-                        <p className="font-semibold text-gray-900">{testimonial.name}</p>
-                        <p className="text-sm text-gray-600">{testimonial.company}</p>
+              {testimonialsLoading ? (
+                <div className="col-span-full flex items-center justify-center py-12">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                </div>
+              ) : testimonials.length > 0 ? (
+                testimonials.map((testimonial, index) => (
+                  <motion.div
+                    key={testimonial.id}
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    viewport={{ once: true }}
+                  >
+                    <Card className="p-8 text-center card-hover h-full">
+                      <div className="flex justify-center mb-4">
+                        {[...Array(testimonial.rating)].map((_, i) => (
+                          <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
+                        ))}
                       </div>
-                    </div>
-                  </Card>
-                </motion.div>
-              ))}
+                      <p className="text-gray-600 mb-6 italic">
+                        "{testimonial.text}"
+                      </p>
+                      <div className="flex items-center justify-center space-x-3">
+                        {testimonial.image_url && (
+                          <img
+                            src={testimonial.image_url}
+                            alt={testimonial.name}
+                            className="w-12 h-12 rounded-full object-cover"
+                          />
+                        )}
+                        <div>
+                          <p className="font-semibold text-gray-900">{testimonial.name}</p>
+                          <p className="text-sm text-gray-600">{testimonial.company}</p>
+                        </div>
+                      </div>
+                    </Card>
+                  </motion.div>
+                ))
+              ) : (
+                fallbackTestimonials.map((testimonial, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    viewport={{ once: true }}
+                  >
+                    <Card className="p-8 text-center card-hover h-full">
+                      <div className="flex justify-center mb-4">
+                        {[...Array(testimonial.rating)].map((_, i) => (
+                          <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
+                        ))}
+                      </div>
+                      <p className="text-gray-600 mb-6 italic">
+                        "{testimonial.text}"
+                      </p>
+                      <div className="flex items-center justify-center space-x-3">
+                        <img
+                          src={testimonial.image}
+                          alt={testimonial.name}
+                          className="w-12 h-12 rounded-full object-cover"
+                        />
+                        <div>
+                          <p className="font-semibold text-gray-900">{testimonial.name}</p>
+                          <p className="text-sm text-gray-600">{testimonial.company}</p>
+                        </div>
+                      </div>
+                    </Card>
+                  </motion.div>
+                ))
+              )}
             </div>
           </div>
         </section>
