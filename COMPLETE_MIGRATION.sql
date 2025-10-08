@@ -684,7 +684,7 @@ CREATE POLICY "Admins can manage settings"
 
 -- Insert default settings
 INSERT INTO settings (key, value, description) VALUES
-  ('site_name', 'AI Visual Studio', 'Site adı'),
+  ('site_name', 'Pixtrate - AI Visual Studio', 'Site adı'),
   ('site_description', 'Mobilya, aksesuar ve takı satıcıları için AI tabanlı görsel ve video üretim platformu', 'Site açıklaması'),
   ('support_email', 'destek@aivisualstudio.com', 'Destek e-postası'),
   ('max_credits_per_user', '1000', 'Kullanıcı başına maksimum kredi'),
