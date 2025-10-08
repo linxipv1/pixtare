@@ -145,6 +145,8 @@ Deno.serve(async (req: Request) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    console.log("🔗 Connecting to:", supabaseUrl);
+
     // Idempotency check - use sale_id from Gumroad
     const rawEventKey = body.sale_id || body.order_number || `${email}:${permalink}:${Date.now()}`;
     const eventKey = String(rawEventKey);
