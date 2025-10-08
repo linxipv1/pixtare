@@ -37,11 +37,8 @@ export const Button: React.FC<ButtonProps> = ({
     lg: 'px-8 py-4 text-lg',
   };
 
-  // Always use size, but allow className to override variant styles
-  const defaultStyles = className ? '' : variants[variant];
-
   const combinedProps = {
-    className: `${baseClasses} ${defaultStyles} ${sizes[size]} ${className}`,
+    className: `${baseClasses} ${variants[variant]} ${sizes[size]} ${className}`,
     disabled: disabled || isLoading,
     ...(to ? { to } : {}),
     ...props
