@@ -24,9 +24,9 @@ export const PricingPage: React.FC = () => {
     const userEmail = user.email || '';
     const gumroadLinks: Record<string, string> = {
       trial: '/app',
-      basic: `https://goruntulabs.gumroad.com/l/temelpaket?prefill_email=${encodeURIComponent(userEmail)}`,
-      standard: `https://goruntulabs.gumroad.com/l/standartpaket?prefill_email=${encodeURIComponent(userEmail)}`,
-      premium: `https://goruntulabs.gumroad.com/l/premiumpaket?prefill_email=${encodeURIComponent(userEmail)}`,
+      basic: `https://pixtrate.gumroad.com/l/temelpaket?prefill_email=${encodeURIComponent(userEmail)}`,
+      standard: `https://pixtrate.gumroad.com/l/standartpaket?prefill_email=${encodeURIComponent(userEmail)}`,
+      premium: `https://pixtrate.gumroad.com/l/premiumpaket?prefill_email=${encodeURIComponent(userEmail)}`,
     };
 
     const targetUrl = gumroadLinks[planId];
