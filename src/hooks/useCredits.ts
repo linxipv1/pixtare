@@ -18,32 +18,34 @@ export const useCredits = () => {
   const [loading, setLoading] = useState(true);
 
   const fetchUserCredits = async () => {
-    if (!user?.email) {
-      console.log('❌ No user email found');
+    if (!user?.id) {
+      console.log('❌ No user ID found');
       setLoading(false);
       return;
     }
 
     try {
-      console.log('🔍 Fetching credits for user:', user.email);
+      console.log('🔍 Fetching credits for user:', user.email, 'ID:', user.id);
 
       const { data, error } = await supabase
         .from('users')
         .select('*')
-        .eq('email', user.email)
-        .single();
+        .eq('id', user.id)
+        .maybeSingle();
 
       if (error) {
         console.error('❌ Error fetching user credits:', error);
-
-        // If user doesn't exist, create them with 10 free credits
-        if (error.code === 'PGRST116') {
-          console.log('📝 Creating new user with 10 free credits...');
-          await createUser();
-          return;
-        }
-
         throw error;
+      }
+
+      // If user doesn't exist in public.users, they need to be created by trigger
+      if (!data) {
+        console.log('⏳ User not found in public.users, waiting for trigger...');
+        // Wait a bit and retry once
+        setTimeout(() => {
+          fetchUserCredits();
+        }, 1000);
+        return;
       }
 
       // Check if credits have expired
@@ -63,9 +65,9 @@ export const useCredits = () => {
               plan_code: null,
               updated_at: new Date().toISOString()
             })
-            .eq('email', user.email)
+            .eq('id', user.id)
             .select()
-            .single();
+            .maybeSingle();
 
           if (updateError) {
             console.error('❌ Error resetting expired credits:', updateError);
@@ -91,41 +93,14 @@ export const useCredits = () => {
   };
 
   const createUser = async () => {
-    if (!user?.email) return;
-
-    try {
-      console.log('🆕 Creating user:', user.email);
-
-      // Calculate expiry date for trial credits (7 days from now)
-      const trialExpiry = new Date();
-      trialExpiry.setDate(trialExpiry.getDate() + 7);
-
-      const { data, error } = await supabase
-        .from('users')
-        .insert({
-          email: user.email,
-          credits_balance: 10,
-          credits_expire_at: trialExpiry.toISOString()
-        })
-        .select()
-        .single();
-
-      if (error) {
-        console.error('❌ Error creating user:', error);
-        throw error;
-      }
-
-      console.log('✅ User created successfully:', data);
-      setUserCredits(data);
-      toast.success('Hoş geldiniz! 10 ücretsiz kredi hesabınıza tanımlandı! (7 gün geçerli)');
-    } catch (error) {
-      console.error('💥 User creation error:', error);
-      toast.error('Kullanıcı oluşturulamadı');
-    }
+    // User creation is now handled by database trigger
+    // This function is no longer needed but kept for compatibility
+    console.log('ℹ️ User creation is handled automatically by database trigger');
+    await fetchUserCredits();
   };
 
   const deductCredits = async (amount: number, description: string) => {
-    if (!user?.email || !userCredits) {
+    if (!user?.id || !userCredits) {
       console.error('❌ Missing user or credits data');
       toast.error('Kullanıcı bilgisi bulunamadı');
       return false;
@@ -147,17 +122,17 @@ export const useCredits = () => {
 
     try {
       const newBalance = userCredits.credits_balance - amount;
-      
+
       console.log('📝 Updating user credits...');
       const { data, error } = await supabase
         .from('users')
-        .update({ 
+        .update({
           credits_balance: newBalance,
           updated_at: new Date().toISOString()
         })
-        .eq('email', user.email)
+        .eq('id', user.id)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('❌ Credit update error:', error);
@@ -192,25 +167,25 @@ export const useCredits = () => {
   };
 
   const addCredits = async (amount: number, description: string) => {
-    if (!user?.email || !userCredits) {
+    if (!user?.id || !userCredits) {
       console.error('❌ Missing user or credits data');
       return false;
     }
 
     try {
       console.log('💰 Adding credits:', amount);
-      
+
       const newBalance = userCredits.credits_balance + amount;
-      
+
       const { data, error } = await supabase
         .from('users')
-        .update({ 
+        .update({
           credits_balance: newBalance,
           updated_at: new Date().toISOString()
         })
-        .eq('email', user.email)
+        .eq('id', user.id)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 
