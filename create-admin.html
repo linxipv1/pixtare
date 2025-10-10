@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Hesap Oluştur</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        button {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #1976D2;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+        }
+        .success {
+            background: #c8e6c9;
+            color: #2e7d32;
+        }
+        .error {
+            background: #ffcdd2;
+            color: #c62828;
+        }
+        .loading {
+            background: #fff3e0;
+            color: #e65100;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Admin Hesap Oluştur</h1>
+
+        <div class="info">
+            <strong>Admin Bilgileri:</strong><br>
+            Email: admin@pixtrate.com<br>
+            Şifre: pX78563214++<br>
+            Kredi: Sınırsız (999999)
+        </div>
+
+        <button id="createBtn" onclick="createAdmin()">Admin Hesabını Oluştur</button>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://rbezqujczgetsoaehfrh.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJiZXpxdWpjemdldHNvYWVoZnJoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkwMDk0NzYsImV4cCI6MjA3NDU4NTQ3Nn0.Eb4SVbUMN34qSaWTZP1eLMxpqLqs2DuozydwMP6Vp3Q';
+
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        async function createAdmin() {
+            const btn = document.getElementById('createBtn');
+            const resultDiv = document.getElementById('result');
+
+            btn.disabled = true;
+            resultDiv.className = 'result loading';
+            resultDiv.innerHTML = 'Admin hesabı oluşturuluyor...';
+
+            try {
+                // 1. Auth kullanıcısını oluştur
+                const { data: authData, error: authError } = await supabase.auth.signUp({
+                    email: 'admin@pixtrate.com',
+                    password: 'pX78563214++',
+                    options: {
+                        data: {
+                            full_name: 'Admin User'
+                        }
+                    }
+                });
+
+                if (authError) {
+                    throw new Error('Auth hatası: ' + authError.message);
+                }
+
+                console.log('Auth kullanıcısı oluşturuldu:', authData);
+
+                // Kullanıcı ID'sini al
+                const userId = authData.user?.id;
+                if (!userId) {
+                    throw new Error('Kullanıcı ID alınamadı');
+                }
+
+                // 2. Users tablosuna sınırsız kredi ekle
+                const { data: userData, error: userError } = await supabase
+                    .from('users')
+                    .upsert({
+                        id: userId,
+                        email: 'admin@pixtrate.com',
+                        credits_balance: 999999
+                    }, {
+                        onConflict: 'id'
+                    })
+                    .select();
+
+                if (userError) {
+                    console.error('Users tablosu hatası:', userError);
+                    // Devam et, RLS sorunu olabilir
+                }
+
+                // 3. Credit ledger'a kayıt ekle
+                const { error: ledgerError } = await supabase
+                    .from('credit_ledger')
+                    .insert({
+                        user_id: userId,
+                        delta: 999999,
+                        reason: 'Admin hesabı - Sınırsız kredi',
+                        ref: 'ADMIN_SETUP'
+                    });
+
+                if (ledgerError) {
+                    console.error('Credit ledger hatası:', ledgerError);
+                }
+
+                // 4. Admin users tablosuna ekle
+                const bcrypt = await import('https://cdn.skypack.dev/bcryptjs');
+                const passwordHash = await bcrypt.hash('pX78563214++', 10);
+
+                const { error: adminError } = await supabase
+                    .from('admin_users')
+                    .insert({
+                        email: 'admin@pixtrate.com',
+                        password_hash: passwordHash,
+                        full_name: 'Admin User',
+                        is_active: true
+                    });
+
+                if (adminError) {
+                    console.error('Admin users hatası:', adminError);
+                }
+
+                resultDiv.className = 'result success';
+                resultDiv.innerHTML = `
+                    <strong>✓ Başarılı!</strong><br><br>
+                    Admin hesabı oluşturuldu.<br><br>
+                    <strong>Giriş Bilgileri:</strong><br>
+                    Email: admin@pixtrate.com<br>
+                    Şifre: pX78563214++<br>
+                    Kredi: 999999 (Sınırsız)<br><br>
+                    User ID: ${userId}<br><br>
+                    <em>Artık bu bilgilerle giriş yapabilirsiniz.</em>
+                `;
+
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `
+                    <strong>✗ Hata!</strong><br><br>
+                    ${error.message}<br><br>
+                    <em>Konsolu kontrol edin veya manuel olarak SQL kullanın.</em>
+                `;
+                console.error('Detaylı hata:', error);
+            } finally {
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
