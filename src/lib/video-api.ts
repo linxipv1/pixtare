@@ -6,7 +6,7 @@ interface VideoGenerationParams {
   imageUrl: string;
   prompt?: string;
   duration?: number;
-  aspectRatio?: '16:9' | '9:16';
+  aspectRatio?: '21:9' | '16:9' | '4:3' | '1:1' | '3:4' | '9:16' | 'auto';
 }
 
 interface VideoGenerationResponse {
@@ -26,18 +26,19 @@ export async function generateVideo(params: VideoGenerationParams): Promise<Vide
       credentials: FAL_VIDEO_API_KEY
     });
 
-    const duration = params.duration || 5;
-    const numFrames = duration === 5 ? 81 : duration === 7 ? 113 : 161;
+    const input: any = {
+      image_url: params.imageUrl,
+      prompt: params.prompt || "smooth natural movement",
+      duration: String(params.duration || 5),
+      aspect_ratio: params.aspectRatio || "16:9",
+      resolution: "1080p",
+      enable_safety_checker: true
+    };
+
+    console.log('📤 Sending to FAL API:', input);
 
     const result = await fal.subscribe("fal-ai/bytedance/seedance/v1/pro/image-to-video", {
-      input: {
-        image_url: params.imageUrl,
-        prompt: params.prompt || "",
-        num_inference_steps: 30,
-        guidance_scale: 7.5,
-        num_frames: numFrames,
-        fps: duration === 5 ? 16 : duration === 7 ? 16 : 16
-      },
+      input,
       logs: true,
       onQueueUpdate: (update) => {
         if (update.status === "IN_PROGRESS" && update.logs) {

@@ -119,6 +119,12 @@ export const GenerateVideoPage: React.FC = () => {
       const imageUrl = await uploadImageToSupabase(selectedFile);
 
       console.log('✅ Image uploaded, calling video API...');
+      console.log('📋 Video generation params:', {
+        imageUrl: imageUrl.substring(0, 50) + '...',
+        prompt: prompt.trim() || undefined,
+        duration: videoDuration,
+        aspectRatio
+      });
 
       const result = await generateVideo({
         imageUrl,
