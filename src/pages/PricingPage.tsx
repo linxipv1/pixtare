@@ -268,7 +268,7 @@ export const PricingPage: React.FC = () => {
 
                   <Button
                     variant={plan.popular ? 'primary' : 'outline'}
-                    className="w-full border-2 border-gray-900"
+                    className="w-full"
                     onClick={() => handlePackageSelection(plan.id)}
                   >
                     {plan.monthlyPrice === 0 ? 'Ücretsiz Başla' : 'Paketi Seç'}
@@ -380,9 +380,8 @@ export const PricingPage: React.FC = () => {
               Beğenmezseniz hiçbir ücret ödemeden ayrılabilirsiniz.
             </p>
             <Button
-              variant="secondary"
               size="lg"
-              className="bg-white text-blue-600 hover:bg-gray-50"
+              className="bg-white text-blue-600 hover:bg-gray-50 hover:text-blue-700 border-0"
               onClick={() => handlePackageSelection('trial')}
             >
               Ücretsiz Denemeye Başla
