@@ -68,7 +68,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       `}>
         <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
           <div className="flex items-center space-x-3">
-            <img src="/pixtrate-logo-v1.png" alt="Pixtrate" className="h-7" />
+            <img src="/pixtrate-logo-v2.png" alt="Pixtrate" className="h-7" />
             <div className="border-l border-gray-300 pl-3">
               <span className="text-sm font-semibold text-red-600">Admin</span>
             </div>

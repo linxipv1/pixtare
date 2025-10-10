@@ -40,7 +40,7 @@ export const Header: React.FC = () => {
         <div className="flex justify-between items-center h-16 relative">
           {/* Logo */}
           <Link to="/" className="flex items-center">
-            <img src="/pixtrate-logo-v1.png" alt="Pixtrate" className="h-8" />
+            <img src="/pixtrate-logo-v2.png" alt="Pixtrate" className="h-8" />
           </Link>
 
           {/* Desktop Navigation */}

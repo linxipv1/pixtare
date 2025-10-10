@@ -66,7 +66,7 @@ export const AdminLogin: React.FC = () => {
           {/* Header */}
           <div className="text-center mb-8">
             <div className="flex flex-col items-center justify-center mb-6">
-              <img src="/pixtrate-logo-v1.png" alt="Pixtrate" className="h-12 mb-3" />
+              <img src="/pixtrate-logo-v2.png" alt="Pixtrate" className="h-12 mb-3" />
               <div className="flex items-center space-x-2">
                 <Shield className="h-5 w-5 text-red-600" />
                 <span className="text-lg font-semibold text-gray-700">Admin Panel</span>
