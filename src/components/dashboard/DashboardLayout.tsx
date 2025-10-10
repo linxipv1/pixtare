@@ -31,11 +31,8 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <Link to="/app" className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                <Sparkles className="h-6 w-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-gray-900">Pixtrate</h1>
+              <img src="/pixtrate-logo-v1.png" alt="Pixtrate" className="h-8" />
+              <div className="border-l border-gray-300 pl-3">
                 <p className="text-sm text-gray-500">Dashboard</p>
               </div>
             </Link>

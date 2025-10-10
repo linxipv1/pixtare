@@ -39,9 +39,8 @@ export const Header: React.FC = () => {
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16 relative">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
-            <Palette className="h-8 w-8 text-blue-600" />
-            <span className="text-xl font-bold text-gray-900">Pixtrate</span>
+          <Link to="/" className="flex items-center">
+            <img src="/pixtrate-logo-v1.png" alt="Pixtrate" className="h-8" />
           </Link>
 
           {/* Desktop Navigation */}

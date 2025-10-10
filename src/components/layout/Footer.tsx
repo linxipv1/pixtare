@@ -9,9 +9,8 @@ export const Footer: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Logo and Description */}
           <div className="col-span-1 md:col-span-2">
-            <div className="flex items-center space-x-2 mb-4">
-              <Palette className="h-8 w-8 text-blue-400" />
-              <span className="text-xl font-bold">Pixtrate</span>
+            <div className="flex items-center mb-4">
+              <img src="/pixtrate-logo-v1.png" alt="Pixtrate" className="h-8 brightness-0 invert" />
             </div>
             <p className="text-gray-400 mb-4 max-w-md">
               Mobilya, aksesuar ve takı satıcıları için en gelişmiş AI tabanlı görsel ve video üretim platformu. 
