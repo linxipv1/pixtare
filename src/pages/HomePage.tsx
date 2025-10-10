@@ -124,11 +124,11 @@ export const HomePage: React.FC = () => {
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
-                <Button 
-                  as={Link} 
-                  to="/auth?mode=signup" 
-                  size="lg" 
-                  className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white px-8 py-4 text-lg btn-hover-lift"
+                <Button
+                  as={Link}
+                  to="/auth?mode=signup"
+                  size="lg"
+                  className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white border-0 px-8 py-4 text-lg btn-hover-lift"
                 >
                   10 Ücretsiz Kredi ile Başla
                   <ArrowRight className="ml-2 w-5 h-5" />
@@ -138,7 +138,7 @@ export const HomePage: React.FC = () => {
                   to="/pricing"
                   variant="outline"
                   size="lg"
-                  className="bg-transparent border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white px-8 py-4 text-lg"
+                  className="border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white bg-white px-8 py-4 text-lg"
                 >
                   Fiyatlandırmayı İncele
                 </Button>
@@ -450,11 +450,11 @@ export const HomePage: React.FC = () => {
               viewport={{ once: true }}
               className="text-center mt-16"
             >
-              <Button 
-                as={Link} 
-                to="/auth?mode=signup" 
+              <Button
+                as={Link}
+                to="/auth?mode=signup"
                 size="lg"
-                className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
+                className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white border-0 shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
               >
                 Siz de Başlayın
                 <ArrowRight className="ml-2 w-5 h-5" />
@@ -634,7 +634,7 @@ export const HomePage: React.FC = () => {
                   as="a"
                   href="mailto:info@pixtrate.com"
                   size="lg"
-                  className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
+                  className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white border-0 shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
                 >
                   E-posta Gönder
                   <ArrowRight className="ml-2 w-5 h-5" />
@@ -660,11 +660,11 @@ export const HomePage: React.FC = () => {
                 Profesyonel ürün fotoğrafları ile satışlarınızı artırın. 
                 10 ücretsiz kredi ile hemen başlayın!
               </p>
-              <Button 
-                as={Link} 
-                to="/auth?mode=signup" 
-                size="lg" 
-                className="bg-white text-blue-600 hover:bg-gray-50 px-10 py-5 text-xl font-bold rounded-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
+              <Button
+                as={Link}
+                to="/auth?mode=signup"
+                size="lg"
+                className="bg-white text-blue-600 hover:bg-gray-50 border-0 px-10 py-5 text-xl font-bold rounded-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
               >
                 Ücretsiz Hesap Oluştur
                 <ArrowRight className="ml-2 w-5 h-5" />

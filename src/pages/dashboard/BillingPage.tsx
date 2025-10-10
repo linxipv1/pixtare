@@ -270,7 +270,7 @@ export const BillingPage: React.FC = () => {
                   </p>
                 </div>
                 {wallet.balance < 10 && (
-                  <Button variant="outline" size="sm" className="text-yellow-700 border-yellow-300">
+                  <Button variant="outline" size="sm" className="text-yellow-700 border-yellow-400 hover:bg-yellow-50 hover:text-yellow-800 bg-white">
                     Kredi Satın Al
                   </Button>
                 )}

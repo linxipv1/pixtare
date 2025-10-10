@@ -263,7 +263,7 @@ export const ProfilePage: React.FC = () => {
                   <p className="font-medium text-red-900">Hesabı Sil</p>
                   <p className="text-sm text-red-600">Bu işlem geri alınamaz</p>
                 </div>
-                <Button variant="outline" size="sm" className="text-red-600 border-red-300 hover:bg-red-100">
+                <Button variant="outline" size="sm" className="text-red-600 border-red-300 hover:bg-red-50 hover:text-red-700 bg-white">
                   Sil
                 </Button>
               </div>
