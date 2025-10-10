@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Camera, Video, History, Sparkles, TrendingUp, Clock, Users, User, CreditCard, Receipt, Settings } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useCredits } from '../../hooks/useCredits';
+import { useDashboardStats } from '../../hooks/useContent';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
@@ -12,6 +13,7 @@ import { DashboardLayout } from '../../components/dashboard/DashboardLayout';
 export const DashboardHome: React.FC = () => {
   const { user } = useAuth();
   const { wallet, loading } = useCredits();
+  const { stats: dashboardStats, loading: statsLoading } = useDashboardStats(user?.id);
 
   const quickActions = [
     {
@@ -43,24 +45,45 @@ export const DashboardHome: React.FC = () => {
     },
   ];
 
+  const calculatePercentageChange = (current: number, previous: number) => {
+    if (previous === 0) return current > 0 ? '+100%' : '+0%';
+    const change = ((current - previous) / previous) * 100;
+    return change > 0 ? `+${change.toFixed(0)}%` : `${change.toFixed(0)}%`;
+  };
+
+  const imagesChange = calculatePercentageChange(
+    dashboardStats.imagesThisMonth,
+    dashboardStats.imagesLastMonth
+  );
+
+  const videosChange = calculatePercentageChange(
+    dashboardStats.totalVideos,
+    dashboardStats.videosLastMonth
+  );
+
+  const savingsChange = calculatePercentageChange(
+    dashboardStats.totalSavings,
+    dashboardStats.savingsLastMonth
+  );
+
   const stats = [
     {
       title: 'Bu Ay Üretilen',
-      value: '0',
+      value: statsLoading ? '...' : dashboardStats.imagesThisMonth.toString(),
       subtitle: 'görsel',
       icon: <Camera className="h-6 w-6 text-blue-600" />,
       bgColor: 'bg-blue-50',
-      change: '+0%',
-      changeType: 'neutral',
+      change: imagesChange,
+      changeType: imagesChange.startsWith('+') && imagesChange !== '+0%' ? 'positive' : 'neutral',
     },
     {
       title: 'Toplam Video',
-      value: '0',
+      value: statsLoading ? '...' : dashboardStats.totalVideos.toString(),
       subtitle: 'video',
       icon: <Video className="h-6 w-6 text-purple-600" />,
       bgColor: 'bg-purple-50',
-      change: '+0%',
-      changeType: 'neutral',
+      change: videosChange,
+      changeType: videosChange.startsWith('+') && videosChange !== '+0%' ? 'positive' : 'neutral',
     },
     {
       title: 'Kalan Kredi',
@@ -73,12 +96,12 @@ export const DashboardHome: React.FC = () => {
     },
     {
       title: 'Toplam Tasarruf',
-      value: '₺0',
+      value: statsLoading ? '...' : `₺${dashboardStats.totalSavings}`,
       subtitle: 'bu ay',
       icon: <TrendingUp className="h-6 w-6 text-green-600" />,
       bgColor: 'bg-green-50',
-      change: '+0%',
-      changeType: 'neutral',
+      change: savingsChange,
+      changeType: savingsChange.startsWith('+') && savingsChange !== '+0%' ? 'positive' : 'neutral',
     },
   ];
 

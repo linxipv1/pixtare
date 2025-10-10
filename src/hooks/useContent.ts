@@ -192,3 +192,102 @@ export function useFeatures() {
 
   return { features, loading };
 }
+
+interface DashboardStats {
+  imagesThisMonth: number;
+  imagesLastMonth: number;
+  totalVideos: number;
+  videosLastMonth: number;
+  totalSavings: number;
+  savingsLastMonth: number;
+}
+
+export function useDashboardStats(userId: string | undefined) {
+  const [stats, setStats] = useState<DashboardStats>({
+    imagesThisMonth: 0,
+    imagesLastMonth: 0,
+    totalVideos: 0,
+    videosLastMonth: 0,
+    totalSavings: 0,
+    savingsLastMonth: 0
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
+
+    async function loadStats() {
+      try {
+        const now = new Date();
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+
+        const { data: imageStats, error: imageError } = await supabase
+          .from('generations')
+          .select('created_at, type, credits_used')
+          .eq('user_id', userId)
+          .eq('type', 'image')
+          .eq('status', 'completed')
+          .gte('created_at', startOfLastMonth.toISOString());
+
+        if (imageError) throw imageError;
+
+        const { data: videoStats, error: videoError } = await supabase
+          .from('generations')
+          .select('created_at, type, credits_used')
+          .eq('user_id', userId)
+          .eq('type', 'video')
+          .eq('status', 'completed');
+
+        if (videoError) throw videoError;
+
+        const imagesThisMonth = imageStats?.filter(
+          g => new Date(g.created_at) >= startOfMonth
+        ).length || 0;
+
+        const imagesLastMonth = imageStats?.filter(
+          g => new Date(g.created_at) >= startOfLastMonth && new Date(g.created_at) <= endOfLastMonth
+        ).length || 0;
+
+        const totalVideos = videoStats?.length || 0;
+
+        const videosLastMonth = videoStats?.filter(
+          g => new Date(g.created_at) >= startOfLastMonth && new Date(g.created_at) <= endOfLastMonth
+        ).length || 0;
+
+        const allGenerations = [...(imageStats || []), ...(videoStats || [])];
+        const creditsThisMonth = allGenerations
+          .filter(g => new Date(g.created_at) >= startOfMonth)
+          .reduce((sum, g) => sum + (g.credits_used || 0), 0);
+
+        const creditsLastMonth = allGenerations
+          .filter(g => new Date(g.created_at) >= startOfLastMonth && new Date(g.created_at) <= endOfLastMonth)
+          .reduce((sum, g) => sum + (g.credits_used || 0), 0);
+
+        const totalSavings = creditsThisMonth * 10;
+        const savingsLastMonth = creditsLastMonth * 10;
+
+        setStats({
+          imagesThisMonth,
+          imagesLastMonth,
+          totalVideos,
+          videosLastMonth,
+          totalSavings,
+          savingsLastMonth
+        });
+      } catch (error) {
+        console.error('Error loading dashboard stats:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadStats();
+  }, [userId]);
+
+  return { stats, loading };
+}
