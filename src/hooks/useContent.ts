@@ -259,17 +259,24 @@ export function useDashboardStats(userId: string | undefined) {
           g => new Date(g.created_at) >= startOfLastMonth && new Date(g.created_at) <= endOfLastMonth
         ).length || 0;
 
-        const allGenerations = [...(imageStats || []), ...(videoStats || [])];
-        const creditsThisMonth = allGenerations
-          .filter(g => new Date(g.created_at) >= startOfMonth)
-          .reduce((sum, g) => sum + (g.credits_used || 0), 0);
+        const imagesThisMonthCount = imageStats?.filter(
+          g => new Date(g.created_at) >= startOfMonth
+        ).length || 0;
 
-        const creditsLastMonth = allGenerations
-          .filter(g => new Date(g.created_at) >= startOfLastMonth && new Date(g.created_at) <= endOfLastMonth)
-          .reduce((sum, g) => sum + (g.credits_used || 0), 0);
+        const imagesLastMonthCount = imageStats?.filter(
+          g => new Date(g.created_at) >= startOfLastMonth && new Date(g.created_at) <= endOfLastMonth
+        ).length || 0;
 
-        const totalSavings = creditsThisMonth * 10;
-        const savingsLastMonth = creditsLastMonth * 10;
+        const videosThisMonthCount = videoStats?.filter(
+          g => new Date(g.created_at) >= startOfMonth
+        ).length || 0;
+
+        const videosLastMonthCount = videoStats?.filter(
+          g => new Date(g.created_at) >= startOfLastMonth && new Date(g.created_at) <= endOfLastMonth
+        ).length || 0;
+
+        const totalSavings = (imagesThisMonthCount * 4 * 150) + (videosThisMonthCount * 250);
+        const savingsLastMonth = (imagesLastMonthCount * 4 * 150) + (videosLastMonthCount * 250);
 
         setStats({
           imagesThisMonth,
