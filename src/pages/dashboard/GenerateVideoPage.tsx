@@ -19,6 +19,8 @@ export const GenerateVideoPage: React.FC = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedVideo, setGeneratedVideo] = useState<string>('');
   const [previewUrl, setPreviewUrl] = useState<string>('');
+  const [videoDuration, setVideoDuration] = useState(5);
+  const [aspectRatio, setAspectRatio] = useState<'16:9' | '9:16'>('16:9');
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -120,7 +122,9 @@ export const GenerateVideoPage: React.FC = () => {
 
       const result = await generateVideo({
         imageUrl,
-        prompt: prompt.trim() || undefined
+        prompt: prompt.trim() || undefined,
+        duration: videoDuration,
+        aspectRatio
       });
 
       console.log('✅ Video generated successfully:', result.videoUrl);
@@ -129,6 +133,8 @@ export const GenerateVideoPage: React.FC = () => {
       try {
         await saveGeneration('video', 6, {
           prompt: prompt.trim() || '',
+          duration: videoDuration,
+          aspect_ratio: aspectRatio,
           seed: result.seed
         }, [result.videoUrl]);
         console.log('✅ Generation saved to database');
@@ -264,6 +270,59 @@ export const GenerateVideoPage: React.FC = () => {
                 <p className="text-xs text-gray-500 mt-2">
                   💡 İpucu: Prompt'u İngilizce girmek daha iyi sonuçlar verir. Boş bırakırsanız otomatik hareket oluşturulur.
                 </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Video Oranı
+                  </label>
+                  <div className="flex flex-col space-y-2">
+                    <label className="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                      <input
+                        type="radio"
+                        value="16:9"
+                        checked={aspectRatio === '16:9'}
+                        onChange={(e) => setAspectRatio(e.target.value as '16:9' | '9:16')}
+                        className="mr-2"
+                        disabled={isGenerating}
+                      />
+                      <span className="text-sm">16:9 (Yatay)</span>
+                    </label>
+                    <label className="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                      <input
+                        type="radio"
+                        value="9:16"
+                        checked={aspectRatio === '9:16'}
+                        onChange={(e) => setAspectRatio(e.target.value as '16:9' | '9:16')}
+                        className="mr-2"
+                        disabled={isGenerating}
+                      />
+                      <span className="text-sm">9:16 (Dikey)</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Video Süresi: {videoDuration}s
+                  </label>
+                  <input
+                    type="range"
+                    min="5"
+                    max="10"
+                    step="1"
+                    value={videoDuration}
+                    onChange={(e) => setVideoDuration(Number(e.target.value))}
+                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                    disabled={isGenerating}
+                  />
+                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                    <span>5s</span>
+                    <span>7s</span>
+                    <span>10s</span>
+                  </div>
+                </div>
               </div>
 
               <Button
