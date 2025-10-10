@@ -1,78 +1,58 @@
 import { fal } from "@fal-ai/client";
 
-const FAL_VIDEO_API_KEY = import.meta.env.VITE_FAL_VIDEO_API_KEY;
+const FAL_API_KEY = import.meta.env.VITE_FAL_API_KEY;
 
 interface VideoGenerationParams {
   imageUrl: string;
-  prompt: string;
-  userId: string;
+  prompt?: string;
 }
 
 interface VideoGenerationResponse {
-  jobId: string;
-  status: 'queued' | 'processing' | 'completed' | 'failed';
-  videoUrl?: string;
-  error?: string;
+  videoUrl: string;
+  seed?: number;
 }
 
-export class VideoAPI {
-  static async generateVideo(params: VideoGenerationParams): Promise<VideoGenerationResponse> {
-    try {
-      if (!FAL_VIDEO_API_KEY || FAL_VIDEO_API_KEY === 'your_fal_api_key_here') {
-        throw new Error('FAL Video API key is not configured.');
-      }
-
-      // Configure fal with video API key
-      fal.config({
-        credentials: FAL_VIDEO_API_KEY
-      });
-
-      // Call fal.ai video generation API
-      const result = await fal.subscribe("fal-ai/fast-svd", {
-        input: {
-          image_url: params.imageUrl,
-          prompt: params.prompt,
-        },
-        logs: true
-      });
-
-      return {
-        jobId: result.requestId || `video_${Date.now()}`,
-        status: 'completed',
-        videoUrl: result.data?.video?.url || undefined,
-      };
-    } catch (error) {
-      console.error('Video generation error:', error);
-      throw new Error(error instanceof Error ? error.message : 'Video oluşturma başarısız oldu');
+export async function generateVideo(params: VideoGenerationParams): Promise<VideoGenerationResponse> {
+  try {
+    if (!FAL_API_KEY) {
+      throw new Error('FAL API key is not configured');
     }
-  }
 
-  static async checkStatus(jobId: string): Promise<VideoGenerationResponse> {
-    try {
-      if (!FAL_VIDEO_API_KEY || FAL_VIDEO_API_KEY === 'your_fal_api_key_here') {
-        throw new Error('FAL Video API key is not configured.');
-      }
+    console.log('🎬 Starting video generation with params:', params);
 
-      // Configure fal with video API key
-      fal.config({
-        credentials: FAL_VIDEO_API_KEY
-      });
+    fal.config({
+      credentials: FAL_API_KEY
+    });
 
-      const status = await fal.queue.status("fal-ai/fast-svd", {
-        requestId: jobId,
-        logs: true
-      });
+    const result = await fal.subscribe("fal-ai/bytedance/seedance/v1/pro/image-to-video", {
+      input: {
+        image_url: params.imageUrl,
+        prompt: params.prompt || "",
+        num_inference_steps: 30,
+        guidance_scale: 7.5,
+        num_frames: 81,
+        fps: 30
+      },
+      logs: true,
+      onQueueUpdate: (update) => {
+        if (update.status === "IN_PROGRESS" && update.logs) {
+          update.logs.forEach((log) => console.log('📹 Video generation log:', log.message));
+        }
+      },
+    });
 
-      return {
-        jobId,
-        status: status.status === 'COMPLETED' ? 'completed' :
-                status.status === 'IN_PROGRESS' ? 'processing' :
-                status.status === 'FAILED' ? 'failed' : 'queued',
-        videoUrl: status.status === 'COMPLETED' ? (status as any).data?.video?.url : undefined,
-      };
-    } catch (error) {
-      console.error('Status check error:', error);
-      throw new Error(error instanceof Error ? error.message : 'Durum kontrolü başarısız oldu');
+    console.log('✅ Video generation completed:', result);
+
+    if (!result.data?.video?.url) {
+      throw new Error('Video URL not found in response');
     }
+
+    return {
+      videoUrl: result.data.video.url,
+      seed: result.data.seed
+    };
+  } catch (error) {
+    console.error('💥 Video generation error:', error);
+    throw new Error(error instanceof Error ? error.message : 'Video generation failed');
   }
 }

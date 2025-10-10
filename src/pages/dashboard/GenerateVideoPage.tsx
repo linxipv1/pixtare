@@ -4,7 +4,7 @@ import { Video, Upload, Sparkles, Download, Eye, Wand2, AlertCircle, CreditCard 
 import { useAuth } from '../../contexts/AuthContext';
 import { useCredits } from '../../hooks/useCredits';
 import { supabase } from '../../lib/supabase';
-import { VideoAPI } from '../../lib/video-api';
+import { generateVideo } from '../../lib/video-api';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
@@ -19,8 +19,6 @@ export const GenerateVideoPage: React.FC = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedVideo, setGeneratedVideo] = useState<string>('');
   const [previewUrl, setPreviewUrl] = useState<string>('');
-  const [videoDuration, setVideoDuration] = useState(5);
-  const [aspectRatio, setAspectRatio] = useState<'16:9' | '9:16'>('16:9');
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -31,12 +29,32 @@ export const GenerateVideoPage: React.FC = () => {
     }
   };
 
-  const uploadImageToTempUrl = async (file: File): Promise<string> => {
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.readAsDataURL(file);
-    });
+  const uploadImageToSupabase = async (file: File): Promise<string> => {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = `video-inputs/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('generated-content')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('generated-content')
+        .getPublicUrl(filePath);
+
+      return publicUrl;
+    } catch (error) {
+      console.error('Image upload error:', error);
+      throw new Error('Görsel yüklenirken hata oluştu');
+    }
   };
 
   const downloadVideo = async (videoUrl: string, filename: string) => {
@@ -64,8 +82,8 @@ export const GenerateVideoPage: React.FC = () => {
       return;
     }
 
-    if (!selectedFile || !prompt.trim()) {
-      toast.error('Lütfen fotoğraf seçin ve prompt girin');
+    if (!selectedFile) {
+      toast.error('Lütfen fotoğraf seçin');
       return;
     }
 
@@ -96,52 +114,29 @@ export const GenerateVideoPage: React.FC = () => {
 
       console.log('✅ Credits deducted, uploading image...');
 
-      const imageUrl = await uploadImageToTempUrl(selectedFile);
+      const imageUrl = await uploadImageToSupabase(selectedFile);
 
       console.log('✅ Image uploaded, calling video API...');
 
-      const result = await VideoAPI.generateVideo({
-        userPrompt: prompt.trim(),
-        duration: videoDuration,
-        aspectRatio,
-        imageUrl
+      const result = await generateVideo({
+        imageUrl,
+        prompt: prompt.trim() || undefined
       });
 
-      console.log('=== VIDEO GENERATION RESULT ===');
-      console.log('Full result:', JSON.stringify(result, null, 2));
+      console.log('✅ Video generated successfully:', result.videoUrl);
+      setGeneratedVideo(result.videoUrl);
 
-      let videoUrl = null;
-
-      if (result.video?.url) {
-        videoUrl = result.video.url;
-      } else if (result.url) {
-        videoUrl = result.url;
-      } else if (result.data?.video?.url) {
-        videoUrl = result.data.video.url;
-      } else if (result.data?.url) {
-        videoUrl = result.data.url;
+      try {
+        await saveGeneration('video', 6, {
+          prompt: prompt.trim() || '',
+          seed: result.seed
+        }, [result.videoUrl]);
+        console.log('✅ Generation saved to database');
+      } catch (saveError) {
+        console.error('⚠️ Failed to save generation to database:', saveError);
       }
 
-      if (videoUrl) {
-        console.log('✅ Video generated successfully');
-        setGeneratedVideo(videoUrl);
-
-        try {
-          await saveGeneration('video', 6, {
-            prompt: prompt.trim(),
-            duration: videoDuration,
-            aspect_ratio: aspectRatio
-          }, [videoUrl]);
-          console.log('✅ Generation saved to database');
-        } catch (saveError) {
-          console.error('⚠️ Failed to save generation to database:', saveError);
-        }
-
-        toast.success('Video başarıyla oluşturuldu!');
-      } else {
-        console.error('=== NO VIDEO URL FOUND ===');
-        throw new Error('Video URL bulunamadı');
-      }
+      toast.success('Video başarıyla oluşturuldu!');
     } catch (error) {
       console.error('💥 Video generation error:', error);
 
@@ -256,7 +251,7 @@ export const GenerateVideoPage: React.FC = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Prompt
+                  Prompt (Opsiyonel)
                 </label>
                 <textarea
                   value={prompt}
@@ -267,66 +262,13 @@ export const GenerateVideoPage: React.FC = () => {
                   disabled={isGenerating}
                 />
                 <p className="text-xs text-gray-500 mt-2">
-                  💡 İpucu: Prompt'u İngilizce girmek daha iyi sonuçlar verir
+                  💡 İpucu: Prompt'u İngilizce girmek daha iyi sonuçlar verir. Boş bırakırsanız otomatik hareket oluşturulur.
                 </p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Video Oranı
-                  </label>
-                  <div className="flex flex-col space-y-2">
-                    <label className="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
-                      <input
-                        type="radio"
-                        value="16:9"
-                        checked={aspectRatio === '16:9'}
-                        onChange={(e) => setAspectRatio(e.target.value as '16:9' | '9:16')}
-                        className="mr-2"
-                        disabled={isGenerating}
-                      />
-                      <span className="text-sm">16:9 (Yatay)</span>
-                    </label>
-                    <label className="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
-                      <input
-                        type="radio"
-                        value="9:16"
-                        checked={aspectRatio === '9:16'}
-                        onChange={(e) => setAspectRatio(e.target.value as '16:9' | '9:16')}
-                        className="mr-2"
-                        disabled={isGenerating}
-                      />
-                      <span className="text-sm">9:16 (Dikey)</span>
-                    </label>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Video Süresi: {videoDuration}s
-                  </label>
-                  <input
-                    type="range"
-                    min="5"
-                    max="10"
-                    step="1"
-                    value={videoDuration}
-                    onChange={(e) => setVideoDuration(Number(e.target.value))}
-                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                    disabled={isGenerating}
-                  />
-                  <div className="flex justify-between text-xs text-gray-500 mt-1">
-                    <span>5s</span>
-                    <span>7s</span>
-                    <span>10s</span>
-                  </div>
-                </div>
               </div>
 
               <Button
                 onClick={handleGenerate}
-                disabled={!selectedFile || !prompt.trim() || isGenerating || creditsLoading}
+                disabled={!selectedFile || isGenerating || creditsLoading}
                 className="w-full"
                 size="lg"
               >
