@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Camera, Upload, Sparkles, Download, Eye, Wand2, AlertCircle, CreditCard } from 'lucide-react';
+import { Camera, Upload, Sparkles, Download, Eye, Wand2, AlertCircle, CreditCard, Video, ArrowRight } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useCredits } from '../../hooks/useCredits';
 import { supabase } from '../../lib/supabase';
@@ -10,10 +10,12 @@ import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { DashboardLayout } from '../../components/dashboard/DashboardLayout';
 import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 
 export const GenerateImagePage: React.FC = () => {
   const { user } = useAuth();
   const { userCredits, deductCredits, loading: creditsLoading } = useCredits();
+  const navigate = useNavigate();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [prompt, setPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
@@ -297,41 +299,72 @@ export const GenerateImagePage: React.FC = () => {
                   <p className="text-sm text-gray-500 mt-1">Bu işlem 30-60 saniye sürebilir</p>
                 </div>
               ) : generatedImages.length > 0 ? (
-                <div className="grid grid-cols-2 gap-4">
-                  {generatedImages.map((image, index) => (
-                    <motion.div
-                      key={index}
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: index * 0.1 }}
-                      className="relative group"
-                    >
-                      <img
-                        src={image.url}
-                        alt={`Generated ${index + 1}`}
-                        className="w-full h-48 object-cover rounded-lg border-2 border-gray-200"
-                      />
-                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100">
-                        <div className="flex gap-2">
-                          <a
-                            href={image.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="p-2 bg-white rounded-full hover:bg-gray-100 transition-colors"
+                <>
+                  <div className="grid grid-cols-2 gap-4">
+                    {generatedImages.map((image, index) => (
+                      <motion.div
+                        key={index}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: index * 0.1 }}
+                        className="relative group"
+                      >
+                        <img
+                          src={image.url}
+                          alt={`Generated ${index + 1}`}
+                          className="w-full h-48 object-cover rounded-lg border-2 border-gray-200"
+                        />
+                        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100">
+                          <div className="flex gap-2">
+                            <a
+                              href={image.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="p-2 bg-white rounded-full hover:bg-gray-100 transition-colors"
+                            >
+                              <Eye className="w-5 h-5 text-gray-900" />
+                            </a>
+                            <button
+                              onClick={() => downloadImage(image.url, `generated-image-${index + 1}.jpg`)}
+                              className="p-2 bg-white rounded-full hover:bg-gray-100 transition-colors"
+                            >
+                              <Download className="w-5 h-5 text-gray-900" />
+                            </button>
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 }}
+                    className="mt-6 pt-6 border-t border-gray-200"
+                  >
+                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-200">
+                      <div className="flex items-start gap-4">
+                        <div className="bg-blue-100 p-3 rounded-lg">
+                          <Video className="w-6 h-6 text-blue-600" />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-gray-900 mb-1">Fotoğraflarınız Hazır!</h4>
+                          <p className="text-sm text-gray-600 mb-4">
+                            Şimdi görsellerinizi video haline getirebilirsiniz
+                          </p>
+                          <Button
+                            onClick={() => navigate('/dashboard/generate-video')}
+                            className="bg-blue-600 hover:bg-blue-700"
                           >
-                            <Eye className="w-5 h-5 text-gray-900" />
-                          </a>
-                          <button
-                            onClick={() => downloadImage(image.url, `generated-image-${index + 1}.jpg`)}
-                            className="p-2 bg-white rounded-full hover:bg-gray-100 transition-colors"
-                          >
-                            <Download className="w-5 h-5 text-gray-900" />
-                          </button>
+                            <Video className="w-4 h-4 mr-2" />
+                            Video Oluştur
+                            <ArrowRight className="w-4 h-4 ml-2" />
+                          </Button>
                         </div>
                       </div>
-                    </motion.div>
-                  ))}
-                </div>
+                    </div>
+                  </motion.div>
+                </>
               ) : (
                 <div className="flex flex-col items-center justify-center py-16 text-center">
                   <div className="bg-gray-100 p-6 rounded-full mb-4">
