@@ -163,7 +163,7 @@ export const HomePage: React.FC = () => {
         </section>
 
         {/* Stats Section */}
-        <section className="py-16 bg-white">
+        <section className="py-16 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
               {statsLoading ? (
@@ -171,7 +171,16 @@ export const HomePage: React.FC = () => {
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
                 </div>
               ) : siteStats.length > 0 ? (
-                siteStats.map((stat, index) => (
+                siteStats.map((stat, index) => {
+                  const bgColorMap: Record<string, string> = {
+                    'text-blue-600': 'bg-blue-100',
+                    'text-green-600': 'bg-green-100',
+                    'text-purple-600': 'bg-purple-100',
+                    'text-orange-600': 'bg-orange-100'
+                  };
+                  const bgColor = bgColorMap[stat.icon_color] || 'bg-gray-100';
+
+                  return (
                   <motion.div
                     key={stat.id}
                     initial={{ opacity: 0, y: 20 }}
@@ -180,13 +189,13 @@ export const HomePage: React.FC = () => {
                     viewport={{ once: true }}
                     className="text-center"
                   >
-                    <div className="flex justify-center mb-3">
+                    <div className={`flex justify-center mb-3 p-4 rounded-full w-16 h-16 mx-auto ${bgColor}`}>
                       {getIconComponent(stat.icon, stat.icon_color)}
                     </div>
                     <div className={`text-3xl font-bold mb-2 ${stat.icon_color}`}>{stat.number}</div>
                     <div className="text-gray-600">{stat.label}</div>
                   </motion.div>
-                ))
+                )})
               ) : (
                 fallbackStats.map((stat, index) => {
                   const numberColorMap: Record<number, string> = {
@@ -195,7 +204,14 @@ export const HomePage: React.FC = () => {
                     2: 'text-purple-600',
                     3: 'text-orange-600'
                   };
+                  const bgColorMap: Record<number, string> = {
+                    0: 'bg-blue-100',
+                    1: 'bg-green-100',
+                    2: 'bg-purple-100',
+                    3: 'bg-orange-100'
+                  };
                   const numberColor = numberColorMap[index] || 'text-gray-900';
+                  const bgColor = bgColorMap[index] || 'bg-gray-100';
 
                   return (
                   <motion.div
@@ -206,7 +222,7 @@ export const HomePage: React.FC = () => {
                     viewport={{ once: true }}
                     className="text-center"
                   >
-                    <div className="flex justify-center mb-3">
+                    <div className={`flex items-center justify-center mb-3 p-4 rounded-full w-16 h-16 mx-auto ${bgColor}`}>
                       {stat.icon}
                     </div>
                     <div className={`text-3xl font-bold mb-2 ${numberColor}`}>{stat.number}</div>
