@@ -1,3 +1,7 @@
+import { fal } from "@fal-ai/client";
+
+const FAL_VIDEO_API_KEY = import.meta.env.VITE_FAL_VIDEO_API_KEY;
+
 interface VideoGenerationParams {
   imageUrl: string;
   prompt: string;
@@ -14,32 +18,61 @@ interface VideoGenerationResponse {
 export class VideoAPI {
   static async generateVideo(params: VideoGenerationParams): Promise<VideoGenerationResponse> {
     try {
-      // Placeholder for video generation API
-      // In production, integrate with services like Runway ML, Pika Labs, etc.
+      if (!FAL_VIDEO_API_KEY || FAL_VIDEO_API_KEY === 'your_fal_api_key_here') {
+        throw new Error('FAL Video API key is not configured.');
+      }
 
-      // For now, return a mock response
+      // Configure fal with video API key
+      fal.config({
+        credentials: FAL_VIDEO_API_KEY
+      });
+
+      // Call fal.ai video generation API
+      const result = await fal.subscribe("fal-ai/fast-svd", {
+        input: {
+          image_url: params.imageUrl,
+          prompt: params.prompt,
+        },
+        logs: true
+      });
+
       return {
-        jobId: `video_${Date.now()}`,
-        status: 'queued',
+        jobId: result.requestId || `video_${Date.now()}`,
+        status: 'completed',
+        videoUrl: result.data?.video?.url || undefined,
       };
     } catch (error) {
       console.error('Video generation error:', error);
-      throw new Error('Video oluşturma başarısız oldu');
+      throw new Error(error instanceof Error ? error.message : 'Video oluşturma başarısız oldu');
     }
   }
 
   static async checkStatus(jobId: string): Promise<VideoGenerationResponse> {
     try {
-      // Placeholder for status check
-      // In production, poll the video generation service
+      if (!FAL_VIDEO_API_KEY || FAL_VIDEO_API_KEY === 'your_fal_api_key_here') {
+        throw new Error('FAL Video API key is not configured.');
+      }
+
+      // Configure fal with video API key
+      fal.config({
+        credentials: FAL_VIDEO_API_KEY
+      });
+
+      const status = await fal.queue.status("fal-ai/fast-svd", {
+        requestId: jobId,
+        logs: true
+      });
 
       return {
         jobId,
-        status: 'processing',
+        status: status.status === 'COMPLETED' ? 'completed' :
+                status.status === 'IN_PROGRESS' ? 'processing' :
+                status.status === 'FAILED' ? 'failed' : 'queued',
+        videoUrl: status.status === 'COMPLETED' ? (status as any).data?.video?.url : undefined,
       };
     } catch (error) {
       console.error('Status check error:', error);
-      throw new Error('Durum kontrolü başarısız oldu');
+      throw new Error(error instanceof Error ? error.message : 'Durum kontrolü başarısız oldu');
     }
   }
 }
