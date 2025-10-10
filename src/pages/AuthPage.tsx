@@ -146,12 +146,7 @@ export const AuthPage: React.FC = () => {
             {/* Header */}
             <div className="text-center mb-8">
               <Link to="/" className="inline-block mb-6">
-                <div className="flex items-center justify-center space-x-2">
-                  <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-green-600 rounded-lg flex items-center justify-center">
-                    <span className="text-white font-bold text-xl">A</span>
-                  </div>
-                  <span className="text-xl font-bold text-gray-900">Pixtrate</span>
-                </div>
+                <img src="/pixtrate-logo-v2.png" alt="Pixtrate" className="h-12 mx-auto" />
               </Link>
               
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
