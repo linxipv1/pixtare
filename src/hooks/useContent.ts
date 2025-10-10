@@ -245,13 +245,13 @@ export function useDashboardStats(userId: string | undefined) {
 
         if (videoError) throw videoError;
 
-        const imagesThisMonth = imageStats?.filter(
+        const imagesThisMonth = (imageStats?.filter(
           g => new Date(g.created_at) >= startOfMonth
-        ).length || 0;
+        ).length || 0) * 4;
 
-        const imagesLastMonth = imageStats?.filter(
+        const imagesLastMonth = (imageStats?.filter(
           g => new Date(g.created_at) >= startOfLastMonth && new Date(g.created_at) <= endOfLastMonth
-        ).length || 0;
+        ).length || 0) * 4;
 
         const totalVideos = videoStats?.length || 0;
 
