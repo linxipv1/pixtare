@@ -1,6 +1,6 @@
 import { fal } from "@fal-ai/client";
 
-const FAL_VIDEO_API_KEY = import.meta.env.VITE_FAL_VIDEO_API_KEY;
+const FAL_API_KEY = import.meta.env.VITE_FAL_API_KEY;
 
 interface VideoGenerationParams {
   imageUrl: string;
@@ -16,14 +16,14 @@ interface VideoGenerationResponse {
 
 export async function generateVideo(params: VideoGenerationParams): Promise<VideoGenerationResponse> {
   try {
-    if (!FAL_VIDEO_API_KEY) {
-      throw new Error('FAL Video API key is not configured');
+    if (!FAL_API_KEY) {
+      throw new Error('FAL API key is not configured');
     }
 
     console.log('🎬 Starting video generation with params:', params);
 
     fal.config({
-      credentials: FAL_VIDEO_API_KEY
+      credentials: FAL_API_KEY
     });
 
     const input: any = {

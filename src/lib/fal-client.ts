@@ -1,11 +1,11 @@
 import { fal } from "@fal-ai/client";
 
-const FAL_IMAGE_API_KEY = import.meta.env.VITE_FAL_IMAGE_API_KEY;
+const FAL_API_KEY = import.meta.env.VITE_FAL_API_KEY;
 
 // Only configure if API key is available
-if (FAL_IMAGE_API_KEY && FAL_IMAGE_API_KEY !== 'your_fal_api_key_here') {
+if (FAL_API_KEY && FAL_API_KEY !== 'your_fal_api_key_here') {
   fal.config({
-    credentials: FAL_IMAGE_API_KEY
+    credentials: FAL_API_KEY
   });
 }
 
@@ -46,7 +46,7 @@ export async function generateImages({
   outputFormat = 'jpeg'
 }: GenerateImagesParams): Promise<GenerateImagesResult> {
   try {
-    if (!FAL_IMAGE_API_KEY || FAL_IMAGE_API_KEY === 'your_fal_api_key_here') {
+    if (!FAL_API_KEY || FAL_API_KEY === 'your_fal_api_key_here') {
       throw new Error('FAL API key is not configured. Please add your FAL API key to the .env file.');
     }
 
